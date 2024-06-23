@@ -27,10 +27,20 @@ app.get("/", function (req, res) {
   if (req.query["q"]) {
     query = req.query["q"];
     encQuery = encodeURIComponent(query);
-
     if (query.match(/![A-Za-z0-9]+/) || query.substring(0, 2) === "! " || query.substring(0, 1) === "\\") {
-      console.log("Queried DuckDuckGo");
-      res.redirect("https://duckduckgo.com?q=" + encQuery);
+      const customs = {
+        "!pgs": "https://www.pgstats.com/search?terms=",
+        "!sgg": "https://www.start.gg/search/all?query=",
+      };
+      if (Object.keys(customs).some((s) => query.startsWith(s))) {
+        const prefix = query.split(" ")[0];
+        const terms = query.substring(prefix.length + 1);
+        res.redirect(customs[prefix] + terms);
+        return;
+      } else {
+        console.log("Queried DuckDuckGo");
+        res.redirect("https://duckduckgo.com?q=" + encQuery);
+      }
     } else if (req.query["searchengine"]) {
       console.log("Queried custom search engine");
       searchEngine = req.query["searchengine"];
