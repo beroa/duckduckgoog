@@ -19,9 +19,15 @@ const server = http.createServer((req, res) => {
   const query = request.query.q;
   const encodedQuery = encodeURIComponent(query);
   const bang = query.split(" ")[0];
+  const normalizedQuery = query.trim().toLowerCase();
+  const isTimerSearch =
+    normalizedQuery === "timer" ||
+    /^\d+(?:\.\d+)?\s*(?:seconds?|minutes?|hours?|days?|weeks?|months?|years?)\s+timer$/.test(normalizedQuery) ||
+    /^\d+:\d{2}(?::\d{2})?\s+timer$/.test(normalizedQuery);
+  const isStocksSearch = /^\S+\s+stocks?$/.test(normalizedQuery);
   let destination = "https://duckduckgo.com/?q=" + encodedQuery;
 
-  if (/^(?:timer|\d+(?:\.\d+)?\s*(?:seconds?|minutes?|hours?|days?|weeks?|months?|years?)\s+timer)$/i.test(query.trim())) {
+  if (isTimerSearch || isStocksSearch) {
     destination = "https://www.google.com/search?q=" + encodedQuery;
   } else if (customBangs[bang]) {
     destination = customBangs[bang] + encodeURIComponent(query.substring(bang.length).trim());
