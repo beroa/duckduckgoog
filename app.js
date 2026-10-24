@@ -31,6 +31,9 @@ app.get("/", function (req, res) {
       const customs = {
         "!pgs": "https://www.pgstats.com/search?terms=",
         "!sgg": "https://www.start.gg/search/all?query=",
+	"!bda": "https://bdolytics.com/en/NA/alchemy/market?q=",
+	"!bdc": "https://bdolytics.com/en/NA/cooking/market?q=",
+	"!bdp": "https://bdolytics.com/en/NA/processing/market?q=",
       };
       if (Object.keys(customs).some((s) => query.startsWith(s))) {
         const prefix = query.split(" ")[0];
