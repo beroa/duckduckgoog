@@ -10,6 +10,26 @@ const customBangs = {
   "!bdp": "https://bdolytics.com/en/NA/processing/market?q=",
 };
 
+const timerDuration = String.raw`(?:(?:\d+(?:\.\d+)?\s*(?:seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h)\s*)+|\d+:\d{2}(?::\d{2})?)`;
+const timerUnit = String.raw`(?:seconds?|secs?|minutes?|mins?|hours?|hrs?)`;
+
+function isTimerSearch(query) {
+  const normalized = query
+    .trim()
+    .toLowerCase()
+    .replace(/(\d)-(?=(?:seconds?|secs?|minutes?|mins?|hours?|hrs?)\b)/g, "$1 ")
+    .replace(/\s+/g, " ");
+
+  return (
+    /^(?:set\s+)?(?:a\s+)?timer$/.test(normalized) ||
+    new RegExp(`^${timerDuration}(?:\\s+(?:countdown|timer))$`).test(normalized) ||
+    new RegExp(`^(?:set\\s+)?(?:a\\s+)?(?:countdown|timer)(?:\\s+(?:for\\s+)?${timerDuration})$`).test(normalized) ||
+    new RegExp(`^set\\s+(?:a\\s+)?(?:countdown|timer)\\s+for\\s+${timerDuration}$`).test(normalized) ||
+    /^\d{1,2}:\d{2}(?::\d{2})?\s+(?:countdown|timer)$/.test(normalized) ||
+    /^(?:set\s+)?(?:a\s+)?(?:countdown|timer)\s+\d{1,2}:\d{2}(?::\d{2})?$/.test(normalized)
+  );
+}
+
 const server = http.createServer((req, res) => {
   const request = url.parse(req.url, true);
 
@@ -23,14 +43,11 @@ const server = http.createServer((req, res) => {
   const encodedQuery = encodeURIComponent(query);
   const bang = query.split(" ")[0].toLowerCase();
   const normalizedQuery = query.trim().toLowerCase();
-  const isTimerSearch =
-    normalizedQuery === "timer" ||
-    /^\d+(?:\.\d+)?\s*(?:seconds?|minutes?|hours?|days?|weeks?|months?|years?)\s+timer$/.test(normalizedQuery) ||
-    /^\d+:\d{2}(?::\d{2})?\s+timer$/.test(normalizedQuery);
+  const timerSearch = isTimerSearch(query);
   const isStocksSearch = /^\S+\s+stocks?$/.test(normalizedQuery);
   let destination;
 
-  if (isTimerSearch || isStocksSearch) {
+  if (timerSearch || isStocksSearch) {
     destination = "https://www.google.com/search?q=" + encodedQuery;
   } else if (customBangs[bang]) {
     destination = customBangs[bang] + encodeURIComponent(query.substring(query.indexOf(" ") + 1).trim());
