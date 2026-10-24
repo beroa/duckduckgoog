@@ -21,7 +21,9 @@ const server = http.createServer((req, res) => {
   const bang = query.split(" ")[0];
   let destination = "https://duckduckgo.com/?q=" + encodedQuery;
 
-  if (customBangs[bang]) {
+  if (/^(?:timer|\d+(?:\.\d+)?\s*(?:seconds?|minutes?|hours?|days?|weeks?|months?|years?)\s+timer)$/i.test(query.trim())) {
+    destination = "https://www.google.com/search?q=" + encodedQuery;
+  } else if (customBangs[bang]) {
     destination = customBangs[bang] + encodeURIComponent(query.substring(bang.length).trim());
   }
 
